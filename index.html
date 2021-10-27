@@ -6,6 +6,7 @@
   </head>
   <body>
 
+    <input id="clickMe" type="button" value="clickme" onclick="doFunction(this);" />
     <style type="text/css">
       html {
               overflow: hidden;
@@ -16,6 +17,7 @@
     <script src="GLTFLoader.js"></script>
     <script src="SceneUtils.js"></script>
     <script src="RGBELoader.js"></script>
+    <script src="tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
     <div id='WebGL-output'></div>
     <script src='https://rawgit.com/josephg/noisejs/master/perlin.js'></script>
@@ -42,6 +44,16 @@
       
       
       
+    
+
+function doFunction( elem){
+
+        elem.style.display = 'none';
+
+    
+
+
+
       navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       .then(function(stream) {
         audioContext = new AudioContext();
@@ -78,11 +90,14 @@
       
         }
         })
+
+      inito();
+    }
         
       
       
       
-      function init() {
+      function inito() {
 
         simplex =  new SimplexNoise();
       
@@ -236,6 +251,8 @@
       
         function render() {
 
+
+
           t += 0.01;
 
 
@@ -387,7 +404,7 @@
         return r;
       }
       
-      window.onload = init;
+     // window.onload = init;
       </script>
   </body>
 </html>
