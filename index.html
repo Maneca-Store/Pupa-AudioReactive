@@ -17,7 +17,6 @@
     <script src="GLTFLoader.js"></script>
     <script src="SceneUtils.js"></script>
     <script src="RGBELoader.js"></script>
-    <script src="tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
     <div id='WebGL-output'></div>
     <script src='https://rawgit.com/josephg/noisejs/master/perlin.js'></script>
@@ -112,13 +111,13 @@
       };
       window.requestAnimationFrame(onFrame);
 
-      inito();
+    
     }
         
       
       
       
-      function inito() {
+      function init() {
 
         simplex =  new SimplexNoise();
       
@@ -425,7 +424,7 @@
         return r;
       }
       
-     // window.onload = init;
+      window.onload = init;
       </script>
   </body>
 </html>
