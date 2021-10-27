@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=UTF-8 />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+    <script src="three.min.js"></script>
+    <script src="GLTFLoader.js"></script>
+    <script src="SceneUtils.js"></script>
+    <script src="RGBELoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    <div id='WebGL-output'></div>
+    <script src='https://rawgit.com/josephg/noisejs/master/perlin.js'></script>
+    <script src="OrbitControls.js"></script>
+    <!-- <script>
+      let scene, camera, renderer, controls, light, model;
+      var sphereGeom;
+
+      function init() {
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xdddddd);
+       /* scene.background = new THREE.CubeTextureLoader()
+          .setPath( 'skybox/' )
+          .load( [
+            'posx.jpg',
+            'negx.jpg',
+            'posy.jpg',
+            'negy.jpg',
+            'posz.jpg',
+            'negz.jpg'
+          ] );*/
+
+        camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,1,5000);
+        camera.position.set(0,25,25);
+        controls = new THREE.OrbitControls(camera);
+
+       // scene.add( new THREE.AxesHelper(500));
+
+        light = new THREE.SpotLight(0xffa95c,4);
+        light.position.set(-50,50,50);
+        light.castShadow = true;
+        light.shadow.bias = -0.0001;
+        light.shadow.mapSize.width = 1024*4;
+        light.shadow.mapSize.height = 1024*4;
+        scene.add( light );
+
+        hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+        scene.add(hemiLight);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 2.3;
+        renderer.setSize(window.innerWidth,window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        
+        new THREE.GLTFLoader().load('model/Pupa.gltf', result => { 
+          model = result.scene.children[0]; 
+          model.position.set(0,0,0);
+          model.traverse(n => { if ( n.isMesh ) {
+            n.castShadow = true; 
+            n.receiveShadow = true;
+            if(n.material.map) n.material.map.anisotropy = 1; 
+          }});
+          scene.add(model);
+
+          
+          animate();
+        });
+
+        
+
+
+
+      }
+
+    
+
+      function animate() {
+
+        renderer.render(scene,camera);
+        light.position.set( 
+          camera.position.x + 10,
+          camera.position.y + 10,
+          camera.position.z + 10,
+
+
+        );
+
+        requestAnimationFrame(animate);
+      }
+      init();
+
+    </script> -->
+
+    <script>var sphereVerticesArray = [];
+      var sphereVerticesNormArray = [];
+      var pOldX = [];
+      var pOldY = [];
+      var pOldZ = [];
+      
+      var controls;
+      var nowPattern = pattern1;
+      var micVolume;
+      var micoVolume;
+      var lastMicVolume = 0;
+      var mesh; 
+      let micVolumeIsDefined = false;
+      var meshLoaded = false;
+      var simplex; 
+      
+      
+      
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then(function(stream) {
+        audioContext = new AudioContext();
+        analyser = audioContext.createAnalyser();
+        microphone = audioContext.createMediaStreamSource(stream);
+        javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+      
+        analyser.smoothingTimeConstant = 0.8;
+        analyser.fftSize = 1024;
+      
+        microphone.connect(analyser);
+        analyser.connect(javascriptNode);
+        javascriptNode.connect(audioContext.destination);
+        javascriptNode.onaudioprocess = function() {
+            var array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(array);
+            var values = 0;
+      
+            var length = array.length;
+            for (var i = 0; i < length; i++) {
+              values += (array[i]);
+            }
+      
+            var average = values / 1000;
+      
+            micoVolume =  parseInt(Math.round(average));
+      
+            micVolume = (micoVolume + lastMicVolume)/2
+      
+            lastMicVolume = micoVolume;
+      
+      
+            micVolumeIsDefined = true;
+      
+        }
+        })
+        
+      
+      
+      
+      function init() {
+
+        simplex =  new SimplexNoise();
+      
+        var scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // create a render and set the size
+        var webGLRenderer = new THREE.WebGLRenderer();
+        webGLRenderer.setClearColor(new THREE.Color(0x000, 1.0));
+        webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+        webGLRenderer.shadowMapEnabled = true;
+      
+        var date = new Date();
+        // var pn = new Perlin('rnd' + date.getTime());
+        
+        new THREE.RGBELoader()
+        .setDataType(THREE.UnsignedByteType)
+.load('christmas_photo_studio_04_1k.hdr', (hdrEquiRect, textureData) => {
+
+
+  hdrEquiRect.mapping = THREE.EquirectangularReflectionMapping;
+
+        scene.environment = hdrEquiRect;
+        // scene.background = hdrEquiRect;
+
+       
+});
+
+          var joiaMaterial = new THREE.MeshPhysicalMaterial();
+        joiaMaterial.color = new THREE.Color(0xffffff);
+        joiaMaterial.roughness = 0.3;
+        joiaMaterial.metalness = 0.8;
+        joiaMaterial.reflectivity = 0.6;
+
+
+        var planetMaterial = new THREE.MeshPhysicalMaterial();
+        planetMaterial.color = new THREE.Color(0xffffff);
+        planetMaterial.roughness = 0.3;
+        planetMaterial.metalness = 0.8;
+        planetMaterial.reflectivity = 0.6;
+
+
+ 
+
+
+
+        new THREE.GLTFLoader().load('model/Pupa.gltf', result => { 
+          model = result.scene.children[0]; 
+          model.position.set(0,0,0);
+          model.scale.set(7,7,7);
+          model.rotateX(-89.5);
+          var newMaterial = new THREE.MeshStandardMaterial({color: 0xff0000});
+
+        model.traverse((o) => {
+        if (o.isMesh) o.material = joiaMaterial;
+        });
+          // model.traverse(n => { if ( n.isMesh ) {
+          //   n.castShadow = true; 
+          //   n.receiveShadow = true;
+          //   if(n.material.map) n.material.map.anisotropy = 1; 
+          // }});
+          
+
+          meshOld = model;
+          var positionAttribute2 = meshOld.geometry.getAttribute('position');
+          var vertex2 = new THREE.Vector3();
+
+          for (var i = 0; i < positionAttribute2.count; i++) {
+
+              vertex2.fromBufferAttribute(positionAttribute2, i);
+                let p = vertex2;
+
+                pOldX[i] = p.x;
+                pOldY[i] = p.y;
+                pOldZ[i] = p.z;
+
+          }
+
+
+          mesh = model;
+          
+
+          scene.add(mesh);
+          meshLoaded = true;
+            
+        });
+        
+        var sphereGeom = new THREE.SphereGeometry(15 , 100, 100);
+
+      
+
+        for (var i in sphereGeom.vertices) {
+          var vertex = sphereGeom.vertices[i];
+          vertex.normalize().multiplyScalar(15);
+        }
+        // save points for later calculation
+        for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+          var vertex = sphereGeom.vertices[i];
+          var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+          sphereVerticesArray.push(vec);
+          var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+          mag = Math.sqrt(mag);
+          var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
+          sphereVerticesNormArray.push(norm);
+        }
+      
+
+      
+        // var planetMaterial = new THREE.MeshNormalMaterial();
+        var wireFrameMat = new THREE.MeshBasicMaterial();
+        wireFrameMat.wireframe = true;
+        wireFrameMat.visible = false;
+      
+        var sphere = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
+
+        var sphere2 = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
+
+
+        sphere.scale.set(0.1, 0.1, 0.1);
+        sphere.position.set(8,-13,0);
+        scene.add(sphere);
+
+
+      
+        // position and point the camera to the center of the scene
+        camera.position.x = 0;
+        camera.position.y = 0;
+        camera.position.z = 80;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      
+      
+        var orbitControls = new THREE.OrbitControls(camera);
+        orbitControls.autoRotate = true;
+        var clock = new THREE.Clock();
+        
+        light = new THREE.SpotLight(0xffffff,0);
+        light.position.set(-50,50,50);
+        light.castShadow = true;
+        light.shadow.bias = -0.0001;
+        light.shadow.mapSize.width = 1024*4;
+        light.shadow.mapSize.height = 1024*4;
+        scene.add( light );
+      
+        hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+        // scene.add(hemiLight);
+      
+      
+        // add the output of the renderer to the html element
+        document.getElementById("WebGL-output").appendChild(webGLRenderer.domElement);
+
+        //document.body.appendChild(renderer.domElement);
+
+      
+        var step = 0;
+      
+        render();
+      
+        function render() {
+          step += 1;
+          
+          var randomVariable = 0;
+          
+
+          if(meshLoaded){
+            
+            scene.remove(mesh);
+
+              var k = 0.1;
+          
+            var time = performance.now() * 0.0009;
+            randomVariable = Math.sin(time)
+            var vertex = new THREE.Vector3();
+          
+          var positionAttribute = mesh.geometry.getAttribute('position');
+          var parts =0;
+          var scaledMicVolume = micVolume*0.006
+
+          light.intensity = 1.5 - 1.5 *micVolume/100;
+            
+          joiaMaterial.roughness = 0.4 + -0.8 *micVolume/100;
+        joiaMaterial.metalness = 0.8 + 0.5 * micVolume/100;
+        joiaMaterial.reflectivity = 0.7 +0.4 * micVolume/100;
+            
+
+
+            for (var i = 0; i < positionAttribute.count; i++) {
+
+              vertex.fromBufferAttribute(positionAttribute, i);
+                let p = vertex;
+
+                //p.normalize().multiplyScalar(1 + parts + 0.9 * simplex.noise3D(p.x * k + time, p.y * k, p.z * k + time));
+
+            var value = scaledMicVolume*nowPattern(new Point((pOldX[i] + step) / 200), (pOldY[i] ) / 200, pOldZ[i] / 200);
+            value = value *0.1;
+            var noise = scaledMicVolume*simplex.noise3D(pOldX[i] * k , pOldY[i] * k, pOldZ[i] * k + i);
+            noise = noise *0.2;
+
+            positionAttribute.setXYZ(i, pOldX[i]+ pOldX[i] *value - pOldX[i] * noise,pOldY[i] + pOldY[i]*value - pOldY[i] * noise, pOldZ[i]+ pOldZ[i]*value - pOldZ[i] * noise );
+
+            }
+
+            //mesh.geometry.computeVertexNormals();
+            mesh.geometry.attributes.position.needsUpdate = true;
+            mesh.geometry.attributes.normal.needsUpdate = true;
+
+            scene.add(mesh);
+            
+          }
+
+          
+
+
+
+
+          
+      
+          var delta = clock.getDelta();
+          var test = 0;
+      
+          orbitControls.update(delta);
+          webGLRenderer.clear();
+      
+         
+      
+          
+            scene.remove(sphere);
+      
+            // planetMaterial.needsUpdate = true;
+      
+      
+      
+            for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+              var vertex = sphereGeom.vertices[i];
+      
+              if(micVolumeIsDefined == false){
+                var value = nowPattern(new Point((vertex.x+step) / 100.0), (vertex.y ) / 100.0, vertex.z / 100.0);
+      
+              vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * value * 0.05;
+              vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * value * 0.05;
+              vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z * value * 0.05;
+              }
+              else {
+                var value = nowPattern(new Point((vertex.x+step)/ 100.0) , (vertex.y ) / 100.0, vertex.z / 100.0);
+                vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * (value *micVolume*0.1 ) //* 2 ;
+                vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * (value*micVolume*0.1)  // * meansMicvalue* 2;
+                vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z* (value*micVolume*0.1)  //* meansMicvalue* 2;
+              }
+      
+             
+              
+      
+            }
+           
+            sphereGeom.computeFaceNormals();
+            sphereGeom.computeVertexNormals();
+      
+            // sphereGeom.verticesNeedUpdate = true;
+            // sphereGeom.normalsNeedUpdate = true;
+      
+            //scene.add(sphere);
+          
+      
+      
+          // render using requestAnimationFrame
+          requestAnimationFrame(render);
+          webGLRenderer.render(scene, camera);
+      
+        }
+      
+
+        ////////////
+      // });
+      
+      }
+      
+      function Point(_x=0, _y=0, _z=0) {
+        this._x = _x;
+        this._y = _y;
+        this._z = _z;
+      }
+      
+      function pattern1(p) {
+        return fbm(p) * 2;
+      }
+      
+      function fbm(p) {
+        var result = noise.simplex3(p._x *4, p._y*4, p._z*4);
+        return result;
+      }
+      
+      function addPoint(arr) {
+        var r = new Point(0, 0, 0);
+        var len = arr.length;
+        for (var i = 0; i < len; i += 1) {
+          r._x += arr[i]._x;
+          r._y += arr[i]._y;
+          r._z += arr[i]._z;
+        }
+      
+        return r;
+      }
+      
+      window.onload = init;
+      </script>
+  </body>
+</html>
