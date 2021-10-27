@@ -49,7 +49,7 @@
       
     
 
-       function doFunction( elem){
+       async function doFunction( elem){
 
         elem.style.display = 'none';
 
@@ -94,33 +94,51 @@
       //   }
       //   })
 
-      // const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      // const audioContext = new AudioContext();
-      // const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
-      // const analyserNode = audioContext.createAnalyser();
-      // mediaStreamAudioSourceNode.connect(analyserNode);
 
-      // const pcmData = new Float32Array(analyserNode.fftSize);
-      // const onFrame = () => {
-      //     analyserNode.getFloatTimeDomainData(pcmData);
-      //     let sumSquares = 0.0;
-      //     for (const amplitude of pcmData) { sumSquares += amplitude*amplitude; }
-      //     lastMicVolume = Math.sqrt(sumSquares / pcmData.length)*5000;
-      //     micVolume = lastMicVolume*0.05 + micVolume*0.95
-      //     if(micVolume > 100){
-      //       micVolume = 100;
-      //     }
-      //     //console.log(micVolume)
-      //     window.requestAnimationFrame(onFrame);
-      // };
-      // window.requestAnimationFrame(onFrame);
-      mic = new p5.AudioIn(); 
+      let userAgentString = 
+                navigator.userAgent;
+      
+                         // Detect Chrome
+            let chromeAgent = 
+                userAgentString.indexOf("Chrome") > -1;
+      // Detect Safari
+let safariAgent = userAgentString.indexOf("Safari") > -1;
+  
+  // Discard Safari since it also matches Chrome
+  if ((chromeAgent) && (safariAgent)) safariAgent = false;
+
+  if(safariAgent){
+       mic = new p5.AudioIn(); 
        mic.start(); // Load the library 
 
        mic = new p5.AudioIn(); 
        mic.start(); // Load the library 
        mic = new p5.AudioIn(); 
        mic.start(),getMicValue = true; // Load the library 
+  }
+  else
+  {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const audioContext = new AudioContext();
+      const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+      const analyserNode = audioContext.createAnalyser();
+      mediaStreamAudioSourceNode.connect(analyserNode);
+
+      const pcmData = new Float32Array(analyserNode.fftSize);
+      const onFrame = () => {
+          analyserNode.getFloatTimeDomainData(pcmData);
+          let sumSquares = 0.0;
+          for (const amplitude of pcmData) { sumSquares += amplitude*amplitude; }
+          lastMicVolume = Math.sqrt(sumSquares / pcmData.length)*5000;
+          micVolume = lastMicVolume*0.05 + micVolume*0.95
+          if(micVolume > 100){
+            micVolume = 100;
+          }
+          //console.log(micVolume)
+          window.requestAnimationFrame(onFrame);
+      };
+      window.requestAnimationFrame(onFrame);
+  }
       
 
     }
