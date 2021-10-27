@@ -21,6 +21,9 @@
     <div id='WebGL-output'></div>
     <script src='https://rawgit.com/josephg/noisejs/master/perlin.js'></script>
     <script src="OrbitControls.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.sound.min.js"></script>
     
 
     <script>var sphereVerticesArray = [];
@@ -40,7 +43,8 @@
       var simplex; 
       var black = new THREE.Color(0x000000);
       var white = new THREE.Color(0xffffff);
-      
+      var mic;
+      var getMicValue = false;
       
       
     
@@ -90,29 +94,33 @@
       //   }
       //   })
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      const audioContext = new AudioContext();
-      const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
-      const analyserNode = audioContext.createAnalyser();
-      mediaStreamAudioSourceNode.connect(analyserNode);
+      // const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      // const audioContext = new AudioContext();
+      // const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+      // const analyserNode = audioContext.createAnalyser();
+      // mediaStreamAudioSourceNode.connect(analyserNode);
 
-      const pcmData = new Float32Array(analyserNode.fftSize);
-      const onFrame = () => {
-          analyserNode.getFloatTimeDomainData(pcmData);
-          let sumSquares = 0.0;
-          for (const amplitude of pcmData) { sumSquares += amplitude*amplitude; }
-          lastMicVolume = Math.sqrt(sumSquares / pcmData.length)*5000;
-          micVolume = lastMicVolume*0.05 + micVolume*0.95
-          if(micVolume > 100){
-            micVolume = 100;
-          }
-          //console.log(micVolume)
-          window.requestAnimationFrame(onFrame);
-      };
-      window.requestAnimationFrame(onFrame);
+      // const pcmData = new Float32Array(analyserNode.fftSize);
+      // const onFrame = () => {
+      //     analyserNode.getFloatTimeDomainData(pcmData);
+      //     let sumSquares = 0.0;
+      //     for (const amplitude of pcmData) { sumSquares += amplitude*amplitude; }
+      //     lastMicVolume = Math.sqrt(sumSquares / pcmData.length)*5000;
+      //     micVolume = lastMicVolume*0.05 + micVolume*0.95
+      //     if(micVolume > 100){
+      //       micVolume = 100;
+      //     }
+      //     //console.log(micVolume)
+      //     window.requestAnimationFrame(onFrame);
+      // };
+      // window.requestAnimationFrame(onFrame);
+      mic = new p5.AudioIn(); 
+       mic.start(); // Load the library 
+      getMicValue = true;
 
-    
     }
+
+
         
       
       
@@ -271,7 +279,11 @@
       
         function render() {
 
-
+    
+          if(getMicValue){
+      micVolume = mic.getLevel()*100;
+      console.log(micVolume);
+      }
 
           t += 0.01;
 
