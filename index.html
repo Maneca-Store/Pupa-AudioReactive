@@ -163,29 +163,14 @@
         var scene = new THREE.Scene();
         scene.background = black;
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
         // create a render and set the size
         var webGLRenderer = new THREE.WebGLRenderer();
         webGLRenderer.setClearColor(new THREE.Color(0x000, 1.0));
         webGLRenderer.setSize(window.innerWidth, window.innerHeight);
         webGLRenderer.shadowMapEnabled = true;
-      
-        var date = new Date();
-        // var pn = new Perlin('rnd' + date.getTime());
-        
-        new THREE.RGBELoader()
-        .setDataType(THREE.UnsignedByteType)
-.load('christmas_photo_studio_04_1k.hdr', (hdrEquiRect, textureData) => {
 
-
-  hdrEquiRect.mapping = THREE.EquirectangularReflectionMapping;
-
-        scene.environment = hdrEquiRect;
-        // scene.background = hdrEquiRect;
-
-       
-});
-
-          var joiaMaterial = new THREE.MeshPhysicalMaterial();
+        var joiaMaterial = new THREE.MeshPhysicalMaterial();
         joiaMaterial.color = new THREE.Color(0xffffff);
         joiaMaterial.roughness = 0.3;
         joiaMaterial.metalness = 0.8;
@@ -197,10 +182,46 @@
         planetMaterial.roughness = 0.3;
         planetMaterial.metalness = 0.8;
         planetMaterial.reflectivity = 0.6;
+      
+        var date = new Date();
+        // var pn = new Perlin('rnd' + date.getTime());
+        
+               // position and point the camera to the center of the scene
+               camera.position.x = 0;
+        camera.position.y = 0;
+        camera.position.z = 80;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      
+      
+        var orbitControls = new THREE.OrbitControls(camera);
+        orbitControls.autoRotate = true;
+        var clock = new THREE.Clock();
+        
+        light = new THREE.SpotLight(0xffffff,0);
+        light.position.set(-50,50,50);
+        light.castShadow = true;
+        light.shadow.bias = -0.0001;
+        light.shadow.mapSize.width = 1024*4;
+        light.shadow.mapSize.height = 1024*4;
+        scene.add( light );
+      
+        hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+        // scene.add(hemiLight);
+      
+      
+        // add the output of the renderer to the html element
+        document.getElementById("WebGL-output").appendChild(webGLRenderer.domElement);
 
 
- 
+        new THREE.RGBELoader()
+        .setDataType(THREE.UnsignedByteType)
+.load('christmas_photo_studio_04_1k.hdr', (hdrEquiRect, textureData) => {
 
+
+  hdrEquiRect.mapping = THREE.EquirectangularReflectionMapping;
+
+        scene.environment = hdrEquiRect;
+        // scene.background = hdrEquiRect;
 
 
         new THREE.GLTFLoader().load('model/Pupa.gltf', result => { 
@@ -241,78 +262,60 @@
 
           scene.add(mesh);
           meshLoaded = true;
+
+          render();
             
         });
-        
-        var sphereGeom = new THREE.SphereGeometry(15 , 100, 100);
+       
+});
 
+
+       
+        
+        // var sphereGeom = new THREE.SphereGeometry(15 , 100, 100);
+
+        // scene.add(sphereGeom);
       
 
-        for (var i in sphereGeom.vertices) {
-          var vertex = sphereGeom.vertices[i];
-          vertex.normalize().multiplyScalar(15);
-        }
-        // save points for later calculation
-        for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
-          var vertex = sphereGeom.vertices[i];
-          var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
-          sphereVerticesArray.push(vec);
-          var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
-          mag = Math.sqrt(mag);
-          var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
-          sphereVerticesNormArray.push(norm);
-        }
+        // for (var i in sphereGeom.vertices) {
+        //   var vertex = sphereGeom.vertices[i];
+        //   vertex.normalize().multiplyScalar(15);
+        // }
+        // // save points for later calculation
+        // for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+        //   var vertex = sphereGeom.vertices[i];
+        //   var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+        //   sphereVerticesArray.push(vec);
+        //   var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+        //   mag = Math.sqrt(mag);
+        //   var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
+        //   sphereVerticesNormArray.push(norm);
+        // }
       
 
       
         // var planetMaterial = new THREE.MeshNormalMaterial();
-        var wireFrameMat = new THREE.MeshBasicMaterial();
-        wireFrameMat.wireframe = true;
-        wireFrameMat.visible = false;
+        // var wireFrameMat = new THREE.MeshBasicMaterial();
+        // wireFrameMat.wireframe = true;
+        // wireFrameMat.visible = false;
       
-        var sphere = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
+        // var sphere = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
 
-        var sphere2 = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
-
-
-        sphere.scale.set(0.1, 0.1, 0.1);
-        sphere.position.set(8,-13,0);
-        scene.add(sphere);
+        // var sphere2 = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
 
 
-      
-        // position and point the camera to the center of the scene
-        camera.position.x = 0;
-        camera.position.y = 0;
-        camera.position.z = 80;
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
-      
-      
-        var orbitControls = new THREE.OrbitControls(camera);
-        orbitControls.autoRotate = true;
-        var clock = new THREE.Clock();
-        
-        light = new THREE.SpotLight(0xffffff,0);
-        light.position.set(-50,50,50);
-        light.castShadow = true;
-        light.shadow.bias = -0.0001;
-        light.shadow.mapSize.width = 1024*4;
-        light.shadow.mapSize.height = 1024*4;
-        scene.add( light );
-      
-        hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
-        // scene.add(hemiLight);
-      
-      
-        // add the output of the renderer to the html element
-        document.getElementById("WebGL-output").appendChild(webGLRenderer.domElement);
+        // sphere.scale.set(0.1, 0.1, 0.1);
+        // sphere.position.set(8,-13,0);
+        // scene.add(sphere);
+
+
 
         //document.body.appendChild(renderer.domElement);
 
       
         var step = 0;
         let t = 0;
-        render();
+        
         
       
         function render() {
@@ -393,36 +396,36 @@
          
       
           
-            scene.remove(sphere);
+            // scene.remove(sphere);
       
             // planetMaterial.needsUpdate = true;
       
       
       
-            for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
-              var vertex = sphereGeom.vertices[i];
+            // for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+            //   var vertex = sphereGeom.vertices[i];
       
-              if(micVolumeIsDefined == false){
-                var value = nowPattern(new Point((vertex.x+step) / 100.0), (vertex.y ) / 100.0, vertex.z / 100.0);
+            //   if(micVolumeIsDefined == false){
+            //     var value = nowPattern(new Point((vertex.x+step) / 100.0), (vertex.y ) / 100.0, vertex.z / 100.0);
       
-              vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * value * 0.05;
-              vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * value * 0.05;
-              vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z * value * 0.05;
-              }
-              else {
-                var value = nowPattern(new Point((vertex.x+step)/ 100.0) , (vertex.y ) / 100.0, vertex.z / 100.0);
-                vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * (value *micVolume*0.1 ) //* 2 ;
-                vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * (value*micVolume*0.1)  // * meansMicvalue* 2;
-                vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z* (value*micVolume*0.1)  //* meansMicvalue* 2;
-              }
+            //   vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * value * 0.05;
+            //   vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * value * 0.05;
+            //   vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z * value * 0.05;
+            //   }
+            //   else {
+            //     var value = nowPattern(new Point((vertex.x+step)/ 100.0) , (vertex.y ) / 100.0, vertex.z / 100.0);
+            //     vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * (value *micVolume*0.1 ) //* 2 ;
+            //     vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * (value*micVolume*0.1)  // * meansMicvalue* 2;
+            //     vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z* (value*micVolume*0.1)  //* meansMicvalue* 2;
+            //   }
       
              
               
       
-            }
+            // }
            
-            sphereGeom.computeFaceNormals();
-            sphereGeom.computeVertexNormals();
+            // sphereGeom.computeFaceNormals();
+            // sphereGeom.computeVertexNormals();
       
             // sphereGeom.verticesNeedUpdate = true;
             // sphereGeom.normalsNeedUpdate = true;
