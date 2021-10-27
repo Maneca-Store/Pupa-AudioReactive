@@ -111,6 +111,8 @@
       let micVolumeIsDefined = false;
       var meshLoaded = false;
       var simplex; 
+      var black = new THREE.Color(0x000000);
+      var white = new THREE.Color(0xffffff);
       
       
       
@@ -159,7 +161,7 @@
         simplex =  new SimplexNoise();
       
         var scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000);
+        scene.background = black;
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         // create a render and set the size
         var webGLRenderer = new THREE.WebGLRenderer();
@@ -309,10 +311,15 @@
 
       
         var step = 0;
-      
+        let t = 0;
         render();
+        
       
         function render() {
+
+          t += 0.01;
+
+
           step += 1;
           
           var randomVariable = 0;
@@ -326,7 +333,12 @@
           
             var time = performance.now() * 0.0009;
             randomVariable = Math.sin(time)
+
+                    
+            scene.background.setRGB(micVolume/400, micVolume/400, micVolume/400)
             var vertex = new THREE.Vector3();
+
+            
           
           var positionAttribute = mesh.geometry.getAttribute('position');
           var parts =0;
@@ -359,6 +371,7 @@
             //mesh.geometry.computeVertexNormals();
             mesh.geometry.attributes.position.needsUpdate = true;
             mesh.geometry.attributes.normal.needsUpdate = true;
+            mesh.scale.set(7 +micVolume/100,7 +micVolume/100, 7 +micVolume/100)
 
             scene.add(mesh);
             
