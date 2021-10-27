@@ -13,7 +13,88 @@
     <div id='WebGL-output'></div>
     <script src='https://rawgit.com/josephg/noisejs/master/perlin.js'></script>
     <script src="OrbitControls.js"></script>
+    <!-- <script>
+      let scene, camera, renderer, controls, light, model;
+      var sphereGeom;
+
+      function init() {
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xdddddd);
+       /* scene.background = new THREE.CubeTextureLoader()
+          .setPath( 'skybox/' )
+          .load( [
+            'posx.jpg',
+            'negx.jpg',
+            'posy.jpg',
+            'negy.jpg',
+            'posz.jpg',
+            'negz.jpg'
+          ] );*/
+
+        camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,1,5000);
+        camera.position.set(0,25,25);
+        controls = new THREE.OrbitControls(camera);
+
+       // scene.add( new THREE.AxesHelper(500));
+
+        light = new THREE.SpotLight(0xffa95c,4);
+        light.position.set(-50,50,50);
+        light.castShadow = true;
+        light.shadow.bias = -0.0001;
+        light.shadow.mapSize.width = 1024*4;
+        light.shadow.mapSize.height = 1024*4;
+        scene.add( light );
+
+        hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+        scene.add(hemiLight);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 2.3;
+        renderer.setSize(window.innerWidth,window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        
+        new THREE.GLTFLoader().load('model/Pupa.gltf', result => { 
+          model = result.scene.children[0]; 
+          model.position.set(0,0,0);
+          model.traverse(n => { if ( n.isMesh ) {
+            n.castShadow = true; 
+            n.receiveShadow = true;
+            if(n.material.map) n.material.map.anisotropy = 1; 
+          }});
+          scene.add(model);
+
+          
+          animate();
+        });
+
+        
+
+
+
+      }
+
     
+
+      function animate() {
+
+        renderer.render(scene,camera);
+        light.position.set( 
+          camera.position.x + 10,
+          camera.position.y + 10,
+          camera.position.z + 10,
+
+
+        );
+
+        requestAnimationFrame(animate);
+      }
+      init();
+
+    </script> -->
 
     <script>var sphereVerticesArray = [];
       var sphereVerticesNormArray = [];
@@ -23,11 +104,11 @@
       
       var controls;
       var nowPattern = pattern1;
-      var micVolume = 0;
-      var micoVolume = 0 ;
+      var micVolume;
+      var micoVolume;
       var lastMicVolume = 0;
       var mesh; 
-      let micVolumeIsDefined = true;
+      let micVolumeIsDefined = false;
       var meshLoaded = false;
       var simplex; 
       var black = new THREE.Color(0x000000);
@@ -103,9 +184,10 @@
         planetMaterial.reflectivity = 0.6;
       
         var date = new Date();
-
+        // var pn = new Perlin('rnd' + date.getTime());
+        
                // position and point the camera to the center of the scene
-        camera.position.x = 0;
+               camera.position.x = 0;
         camera.position.y = 0;
         camera.position.z = 80;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -122,6 +204,9 @@
         light.shadow.mapSize.width = 1024*4;
         light.shadow.mapSize.height = 1024*4;
         scene.add( light );
+      
+        hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+        // scene.add(hemiLight);
       
       
         // add the output of the renderer to the html element
@@ -149,6 +234,12 @@
         model.traverse((o) => {
         if (o.isMesh) o.material = joiaMaterial;
         });
+          // model.traverse(n => { if ( n.isMesh ) {
+          //   n.castShadow = true; 
+          //   n.receiveShadow = true;
+          //   if(n.material.map) n.material.map.anisotropy = 1; 
+          // }});
+          
 
           meshOld = model;
           var positionAttribute2 = meshOld.geometry.getAttribute('position');
@@ -239,6 +330,7 @@
 
           if(meshLoaded){
             
+            scene.remove(mesh);
 
               var k = 0.1;
           
@@ -284,6 +376,7 @@
             mesh.geometry.attributes.normal.needsUpdate = true;
             mesh.scale.set(7 +micVolume/100,7 +micVolume/100, 7 +micVolume/100)
 
+            scene.add(mesh);
             
           }
 
