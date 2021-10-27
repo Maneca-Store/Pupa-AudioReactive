@@ -5,6 +5,13 @@
     <link rel="stylesheet" type="text/css" href="styles.css" />
   </head>
   <body>
+
+    <style type="text/css">
+      html {
+              overflow: hidden;
+      }
+      </style>
+      
     <script src="three.min.js"></script>
     <script src="GLTFLoader.js"></script>
     <script src="SceneUtils.js"></script>
@@ -257,7 +264,7 @@
 
           light.intensity = 1.5 - 1.5 *micVolume/100;
             
-          joiaMaterial.roughness = 0.4 + -0.8 *micVolume/100;
+        joiaMaterial.roughness = 0.4 + -0.8 *micVolume/100;
         joiaMaterial.metalness = 0.8 + 0.5 * micVolume/100;
         joiaMaterial.reflectivity = 0.7 +0.4 * micVolume/100;
             
