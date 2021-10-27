@@ -49,7 +49,7 @@
       
     
 
-      async function doFunction( elem){
+       function doFunction( elem){
 
         elem.style.display = 'none';
 
@@ -116,12 +116,17 @@
       // window.requestAnimationFrame(onFrame);
       mic = new p5.AudioIn(); 
        mic.start(); // Load the library 
-      getMicValue = true;
+
+       mic = new p5.AudioIn(); 
+       mic.start(); // Load the library 
+       mic = new p5.AudioIn(); 
+       mic.start(),getMicValue = true; // Load the library 
+      
 
     }
 
 
-        
+      
       
       
       
@@ -281,7 +286,9 @@
 
     
           if(getMicValue){
-      micVolume = mic.getLevel()*100;
+            lastMicVolume = mic.getLevel()*6000;
+          micVolume = lastMicVolume*0.05 + micVolume*0.95
+          if(micVolume > 100) micVolume = 100
       console.log(micVolume);
       }
 
