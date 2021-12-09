@@ -26,9 +26,11 @@
     <div id='WebGL-output'></div>
     <script src='https://rawgit.com/josephg/noisejs/master/perlin.js'></script>
     <script src="OrbitControls.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.sound.min.js"></script>
+    <script type="text/javascript" src="dat.gui.min.js"></script>
+
     
 
     <script>var sphereVerticesArray = [];
@@ -36,6 +38,9 @@
       var pOldX = [];
       var pOldY = [];
       var pOldZ = [];
+      var pOldXNorm = [];
+      var pOldYNorm = [];
+      var pOldZNorm = [];
       
       var controls;
       var nowPattern = pattern1;
@@ -155,11 +160,42 @@ let safariAgent = userAgentString.indexOf("Safari") > -1;
     }
 
 
-      
+    const noiseControl = {
+        noise1: 1,
+        noise2:2,
+        k: 1,
+        parameter1: 200,
+        parameter2: 1,
+        parameter3: 1,
+        parameter4: 1
+			};
+
+
+    function initGUI() {
+
+        const gui = new dat.GUI();
+
+        gui.add(noiseControl, 'noise1',0.1, 30 ).step(0.01);
+        gui.add(noiseControl, 'noise2',0.1, 30 ).step(0.01);
+
+        gui.add(noiseControl, 'k',0.0001, 0.5 ).step(0.01);
+        gui.add(noiseControl, 'parameter1',0.0001, 700).step(0.01);
+        gui.add(noiseControl, 'parameter2',0.0001, 1 ).step(0.01);
+        gui.add(noiseControl, 'parameter3',0.0001, 1 ).step(0.01);
+        gui.add(noiseControl, 'parameter4',0.0001, 1 ).step(0.01);
+
+
+      } 
       
       
       
       function init() {
+
+
+        // function initGUI() {
+
+        // const gui = new dat.GUI();
+
 
         simplex =  new SimplexNoise();
       
@@ -191,11 +227,11 @@ let safariAgent = userAgentString.indexOf("Safari") > -1;
                // position and point the camera to the center of the scene
         camera.position.x = 0;
         camera.position.y = 0;
-        camera.position.z = 80;
+        camera.position.z = 40;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
       
       
-        var orbitControls = new THREE.OrbitControls(camera);
+        var orbitControls = new THREE.OrbitControls(camera, webGLRenderer.domElement);
         orbitControls.autoRotate = true;
         orbitControls.minDistance = 40;
 
@@ -251,6 +287,12 @@ orbitControls.enablePan = false;
                 pOldX[i] = p.x;
                 pOldY[i] = p.y;
                 pOldZ[i] = p.z;
+
+                var mag = p.x * p.x + p.y * p.y + p.z * p.z;
+                mag = Math.sqrt(mag);
+                pOldXNorm[i] = p.x/mag;
+                pOldYNorm[i] = p.y/mag;
+                pOldZNorm[i] = p.z/mag;
 
           }
 
@@ -344,6 +386,8 @@ orbitControls.enablePan = false;
             
 
               var k = 0.1;
+
+              k = noiseControl.k;
           
             var time = performance.now() * 0.0009;
             randomVariable = Math.sin(time)
@@ -360,33 +404,59 @@ orbitControls.enablePan = false;
 
           light.intensity = 1.5 - 1.5 *micVolume/100;
             
-        joiaMaterial.roughness = 0.4 + -0.8 *micVolume/100;
-        joiaMaterial.metalness = 0.8 + 0.5 * micVolume/100;
-        joiaMaterial.reflectivity = 0.7 +0.4 * micVolume/100;
+          joiaMaterial.roughness = 0.4 + -0.8 *micVolume/100;
+          joiaMaterial.metalness = 0.8 + 0.5 * micVolume/100;
+          joiaMaterial.reflectivity = 0.7 +0.4 * micVolume/100;
             
+          
+            // change '0.003' for more aggressive animation
+  var time = performance.now() * 0.003;
+  //console.log(time)
+
+  //go through vertices here and reposition them
+  
+  // change 'k' value for more spikes
+  var k = 5;
+          var positionMeshAtr = mesh.geometry.getAttribute('position');
+          var vertexMesh = new THREE.Vector3();
+
+          
+  for (var i = 0; i < positionMeshAtr.count; i++) {
+    vertexMesh.fromBufferAttribute(positionMeshAtr, i);
+        let p = vertexMesh;
+        let noiseScale = scaledMicVolume*0.2;
+      p.normalize().multiplyScalar(0.5 + noise.perlin3(pOldX[i] * k + time, pOldY[i] * k, pOldZ[i] * k));
+      positionAttribute.setXYZ(i, p.x*noiseScale + pOldX[i] , p.y*noiseScale + pOldY[i],  p.z*noiseScale  + pOldZ[i]);
+
+  }
+           mesh.geometry.attributes.position.needsUpdate = true;
+           mesh.geometry.attributes.normal.needsUpdate = true;
 
 
-            for (var i = 0; i < positionAttribute.count; i++) {
 
-              vertex.fromBufferAttribute(positionAttribute, i);
-                let p = vertex;
+          //   for (var i = 0; i < positionAttribute.count; i++) {
 
-                //p.normalize().multiplyScalar(1 + parts + 0.9 * simplex.noise3D(p.x * k + time, p.y * k, p.z * k + time));
+          //     vertex.fromBufferAttribute(positionAttribute, i);
+          //       let p = vertex;
 
-            var value = scaledMicVolume*nowPattern(new Point((pOldX[i] + step) / 200), (pOldY[i] ) / 200, pOldZ[i] / 200);
-            value = value *0.8;
-            if(value < 0.1)value = 0.1;
-            var noise = scaledMicVolume*simplex.noise3D(pOldX[i] * k , pOldY[i] * k, pOldZ[i] * k + i);
-            noise = noise *0.5;
+          //       //p.normalize().multiplyScalar(1 + parts + 0.9 * simplex.noise3D(p.x * k + time, p.y * k, p.z * k + time));
 
-            positionAttribute.setXYZ(i, pOldX[i]+ pOldX[i] *value - pOldX[i] * noise,pOldY[i] + pOldY[i]*value - pOldY[i] * noise, pOldZ[i]+ pOldZ[i]*value - pOldZ[i] * noise );
-            mesh.scale.set(20 +micVolume/100,20 +micVolume/100, 20 +micVolume/100)
+          //   var value = nowPattern(new Point((pOldX[i] + step) / 100), (pOldY[i] ) / 100, pOldZ[i] / 100);
+          //   //value = (value *0.8 ) * noiseControl.noise1;
+            
+          //   var noise = scaledMicVolume*simplex.noise3D(pOldX[i] * k + step, pOldY[i] * k, pOldZ[i] * k + i);
+          //   noise = (noise *0.5)*noiseControl.noise2;
 
-            }
+          //   //positionAttribute.setXYZ(i, pOldX[i]+ pOldX[i] *value - pOldX[i] * noise,pOldY[i] + pOldY[i]*value - pOldY[i] * noise, pOldZ[i]+ pOldZ[i]*value - pOldZ[i] * noise );
+          //   positionAttribute.setXYZ(i, pOldX[i]+ pOldXNorm[i] *value ,pOldY[i] + pOldYNorm[i]*value , pOldZ[i]+ pOldZNorm[i]*value  );
 
-            //mesh.geometry.computeVertexNormals();
-            mesh.geometry.attributes.position.needsUpdate = true;
-            mesh.geometry.attributes.normal.needsUpdate = true;
+          //   mesh.scale.set(20 +micVolume/100,20 +micVolume/100, 20 +micVolume/100)
+
+          //   }
+
+          //   //mesh.geometry.computeVertexNormals();
+          //   mesh.geometry.attributes.position.needsUpdate = true;
+          //   mesh.geometry.attributes.normal.needsUpdate = true;
 
             
           }
