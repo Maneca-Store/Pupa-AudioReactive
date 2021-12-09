@@ -7,8 +7,8 @@
   <body>
 
     <input id="QuietEnvironment" type="button" value="QuietEnvironment" onclick="doFunction(this, 5000);" />
-    <input id="LoudEnvironment" type="button" value="LoudEnvironment" onclick="doFunction(this, 3000);" />
-    <input id="SuperLoudEnvironment" type="button" value="SuperLoudEnvironment" onclick="doFunction(this, 1000);" />
+    <input id="LoudEnvironment" type="button" value="LoudEnvironment" onclick="doFunction(this, 100);" />
+    <input id="SuperLoudEnvironment" type="button" value="SuperLoudEnvironment" onclick="doFunction(this, 60);" />
 
     
 
@@ -66,12 +66,12 @@
         var quiet = document.getElementById("QuietEnvironment");
         var loud = document.getElementById("LoudEnvironment");
         var superloud = document.getElementById("SuperLoudEnvironment");
-    
+        
         quiet.style.display = "none";
         loud.style.display = "none";
         superloud.style.display = "none";
 
-
+        
 
       // navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       // .then(function(stream) {
@@ -527,13 +527,15 @@ orbitControls.enablePan = false;
       
       }
       
-      function Point(_x=0, _y=0, _z=0) {
+      function Point(_x=0, _y=0, _z=0) 
+      {
         this._x = _x;
         this._y = _y;
         this._z = _z;
       }
       
-      function pattern1(p) {
+      function pattern1(p)
+      {
         return fbm(p) * 2;
       }
       
