@@ -208,7 +208,14 @@ let safariAgent = userAgentString.indexOf("Safari") > -1;
         hasStarted = true;
       };
       
-      
+      document.ontouchstart = function () {
+
+        if(!hasStarted){
+          doFunction( 200);
+        }
+        hasStarted = true;
+      };
+
       
       function init() {
 
