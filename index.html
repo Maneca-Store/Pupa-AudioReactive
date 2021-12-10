@@ -6,9 +6,9 @@
   </head>
   <body>
 
-    <input id="QuietEnvironment" type="button" value="QuietEnvironment" onclick="doFunction(this, 10000);" />
+    <!-- <input id="QuietEnvironment" type="button" value="QuietEnvironment" onclick="doFunction(this, 10000);" />
     <input id="LoudEnvironment" type="button" value="LoudEnvironment" onclick="doFunction(this, 5000);" />
-    <input id="SuperLoudEnvironment" type="button" value="SuperLoudEnvironment" onclick="doFunction(this, 2000);" />
+    <input id="SuperLoudEnvironment" type="button" value="SuperLoudEnvironment" onclick="doFunction(this, 2000);" /> -->
 
     
 
@@ -59,17 +59,24 @@
       
     
 
-       async function doFunction( elem, intensity){
+       async function doFunction( intensity){
 
         //elem.style.display = 'none';
 
-        var quiet = document.getElementById("QuietEnvironment");
-        var loud = document.getElementById("LoudEnvironment");
-        var superloud = document.getElementById("SuperLoudEnvironment");
+
+
+
+
+        // var quiet = document.getElementById("QuietEnvironment");
+        // var loud = document.getElementById("LoudEnvironment");
+        // var superloud = document.getElementById("SuperLoudEnvironment");
         
-        quiet.style.display = "none";
-        loud.style.display = "none";
-        superloud.style.display = "none";
+        // quiet.style.display = "none";
+        // loud.style.display = "none";
+        // superloud.style.display = "none";
+
+
+
 
         
 
@@ -186,6 +193,20 @@ let safariAgent = userAgentString.indexOf("Safari") > -1;
 
 
       } 
+
+      let hasStarted; 
+
+      document.onclick= function(event) {
+    // Compensate for IE<9's non-standard event model
+    //
+    if (event===undefined) event= window.event;
+    var target= 'target' in event? event.target : event.srcElement;
+
+        if(!hasStarted){
+          doFunction( 200);
+        }
+        hasStarted = true;
+      };
       
       
       
