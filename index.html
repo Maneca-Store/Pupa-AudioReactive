@@ -6,9 +6,9 @@
   </head>
   <body>
 
-    <input id="QuietEnvironment" type="button" value="QuietEnvironment" onclick="doFunction(this, 5000);" />
-    <input id="LoudEnvironment" type="button" value="LoudEnvironment" onclick="doFunction(this, 100);" />
-    <input id="SuperLoudEnvironment" type="button" value="SuperLoudEnvironment" onclick="doFunction(this, 60);" />
+    <input id="QuietEnvironment" type="button" value="QuietEnvironment" onclick="doFunction(this, 10000);" />
+    <input id="LoudEnvironment" type="button" value="LoudEnvironment" onclick="doFunction(this, 5000);" />
+    <input id="SuperLoudEnvironment" type="button" value="SuperLoudEnvironment" onclick="doFunction(this, 2000);" />
 
     
 
@@ -55,7 +55,7 @@
       var white = new THREE.Color(0xffffff);
       var mic;
       var getMicValue = false;
-      
+      let micIntensity = 100;
       
     
 
@@ -368,7 +368,7 @@ orbitControls.enablePan = false;
 
     
           if(getMicValue){
-            lastMicVolume = mic.getLevel()*6000;
+            lastMicVolume = mic.getLevel()*micIntensity;
           micVolume = lastMicVolume*0.05 + micVolume*0.95
           if(micVolume > 100) micVolume = 100
       console.log(micVolume);
